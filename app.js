@@ -127,7 +127,9 @@ const cardModal = document.getElementById('cardModal');
 const drugForm = document.getElementById('drugForm');
 const formTitle = document.getElementById('formTitle');
 const drugId = document.getElementById('drugId');
-const tagCheckboxes = document.getElementById('tagCheckboxes');
+const multiselect = document.getElementById('multiselect');
+const multiselectDisplay = document.getElementById('multiselectDisplay');
+const multiselectDropdown = document.getElementById('multiselectDropdown');
 const nameInput = document.getElementById('nameInput');
 const substanceInput = document.getElementById('substanceInput');
 const packInput = document.getElementById('packInput');
@@ -189,7 +191,67 @@ function initMonthYear() {
 async function init() {
     await openDB();
     initMonthYear();
+    initMultiselect();
     await refreshAll();
+}
+
+// === MULTISELECT ===
+function initMultiselect() {
+    if (!multiselect || !multiselectDisplay || !multiselectDropdown) return;
+
+    multiselect.addEventListener('click', function(e) {
+        e.stopPropagation();
+        multiselect.classList.toggle('open');
+        multiselectDropdown.classList.toggle('hidden');
+    });
+
+    multiselectDropdown.addEventListener('click', function(e) {
+        e.stopPropagation();
+    });
+
+    document.addEventListener('click', function() {
+        multiselect.classList.remove('open');
+        multiselectDropdown.classList.add('hidden');
+    });
+
+    var checkboxes = multiselectDropdown.querySelectorAll('input[type="checkbox"]');
+    checkboxes.forEach(function(cb) {
+        cb.addEventListener('change', updateMultiselectDisplay);
+    });
+}
+
+function updateMultiselectDisplay() {
+    var tags = getSelectedTags();
+    if (tags.length === 0) {
+        multiselectDisplay.innerHTML = '<span class="multiselect-placeholder">Выберите тип</span>';
+    } else {
+        multiselectDisplay.innerHTML = '';
+        tags.forEach(function(tag) {
+            var span = document.createElement('span');
+            span.className = 'drug-tag tag-' + tag;
+            span.textContent = tag;
+            multiselectDisplay.appendChild(span);
+        });
+    }
+}
+
+function getSelectedTags() {
+    if (!multiselectDropdown) return ['Лекарство'];
+    var checked = multiselectDropdown.querySelectorAll('input[type="checkbox"]:checked');
+    var tags = [];
+    checked.forEach(function(cb) { tags.push(cb.value); });
+    return tags.length > 0 ? tags : ['Лекарство'];
+}
+
+function setSelectedTags(tags) {
+    if (!multiselectDropdown) return;
+    var checkboxes = multiselectDropdown.querySelectorAll('input[type="checkbox"]');
+    checkboxes.forEach(function(cb) { cb.checked = false; });
+    tags.forEach(function(tag) {
+        var cb = multiselectDropdown.querySelector('input[value="' + tag + '"]');
+        if (cb) cb.checked = true;
+    });
+    updateMultiselectDisplay();
 }
 
 // === ОТРИСОВКА ===
@@ -260,9 +322,7 @@ function renderDrugList(container, drugs) {
     drugs.forEach(function(d) {
         var card = document.createElement('div');
         card.className = 'drug-card ' + getStatus(d.expiryDate);
-        card.addEventListener('click', function() {
-            openCard(d);
-        });
+        card.addEventListener('click', function() { openCard(d); });
 
         var photoHTML = '';
         var firstPhoto = getFirstPhoto(d);
@@ -430,9 +490,7 @@ if (searchInput) {
 
 // === ДОБАВЛЕНИЕ / ФОТО ===
 if (addButton) {
-    addButton.addEventListener('click', function() {
-        openForm(null);
-    });
+    addButton.addEventListener('click', function() { openForm(null); });
 }
 
 if (photoButton) {
@@ -488,24 +546,6 @@ function renderTempPhotos() {
     });
 }
 
-function getSelectedTags() {
-    if (!tagCheckboxes) return ['Лекарство'];
-    var checked = tagCheckboxes.querySelectorAll('input[type="checkbox"]:checked');
-    var tags = [];
-    checked.forEach(function(cb) { tags.push(cb.value); });
-    return tags.length > 0 ? tags : ['Лекарство'];
-}
-
-function setSelectedTags(tags) {
-    if (!tagCheckboxes) return;
-    var checkboxes = tagCheckboxes.querySelectorAll('input[type="checkbox"]');
-    checkboxes.forEach(function(cb) { cb.checked = false; });
-    tags.forEach(function(tag) {
-        var cb = tagCheckboxes.querySelector('input[value="' + tag + '"]');
-        if (cb) cb.checked = true;
-    });
-}
-
 function openForm(drug) {
     if (!formModal) return;
     tempPhotos = [];
@@ -537,15 +577,11 @@ function openForm(drug) {
 }
 
 if (cancelForm) {
-    cancelForm.addEventListener('click', function() {
-        if (formModal) formModal.classList.add('hidden');
-    });
+    cancelForm.addEventListener('click', function() { if (formModal) formModal.classList.add('hidden'); });
 }
 
 if (closeFormModal) {
-    closeFormModal.addEventListener('click', function() {
-        if (formModal) formModal.classList.add('hidden');
-    });
+    closeFormModal.addEventListener('click', function() { if (formModal) formModal.classList.add('hidden'); });
 }
 
 if (drugForm) {
@@ -584,7 +620,6 @@ function openCard(drug) {
     if (!cardModal) return;
     currentCardDrug = drug;
 
-    // Теги
     if (cardTags) {
         cardTags.innerHTML = '';
         var itemTags = drug.tags || (drug.tag ? [drug.tag] : ['Лекарство']);
@@ -614,7 +649,6 @@ function openCard(drug) {
         if (cardPhotoPlaceholder) cardPhotoPlaceholder.classList.remove('hidden');
     }
 
-    // Точки-индикаторы
     if (photoDots) {
         photoDots.innerHTML = '';
         if (photos.length > 1) {
@@ -628,7 +662,6 @@ function openCard(drug) {
 
     cardModal.classList.remove('hidden');
 
-    // Листание фото по тапу
     if (cardPhoto && photos.length > 1) {
         var currentPhotoIndex = 0;
         cardPhoto.onclick = function() {
@@ -661,9 +694,7 @@ if (deleteFromCard) {
 }
 
 if (closeCard) {
-    closeCard.addEventListener('click', function() {
-        if (cardModal) cardModal.classList.add('hidden');
-    });
+    closeCard.addEventListener('click', function() { if (cardModal) cardModal.classList.add('hidden'); });
 }
 
 document.querySelectorAll('.modal-backdrop').forEach(function(bg) {
@@ -673,22 +704,17 @@ document.querySelectorAll('.modal-backdrop').forEach(function(bg) {
     });
 });
 
-// === УВЕДОМЛЕНИЕ ===
 function showToast(message) {
     if (!toast) return;
     toast.textContent = message;
     toast.classList.remove('hidden');
-    setTimeout(function() {
-        toast.classList.add('hidden');
-    }, 2000);
+    setTimeout(function() { toast.classList.add('hidden'); }, 2000);
 }
 
-// === УТИЛИТЫ ===
 function escapeHTML(str) {
     var div = document.createElement('div');
     div.textContent = str || '';
     return div.innerHTML;
 }
 
-// === ЗАПУСК ===
 init();
