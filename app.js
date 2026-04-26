@@ -103,10 +103,14 @@ const searchToggle = document.getElementById('searchToggle');
 const searchContainer = document.getElementById('searchContainer');
 const searchInput = document.getElementById('searchInput');
 const mainContent = document.getElementById('mainContent');
+const allContent = document.getElementById('allContent');
 const expiredList = document.getElementById('expiredList');
 const soonList = document.getElementById('soonList');
 const expiredSection = document.getElementById('expiredSection');
 const soonSection = document.getElementById('soonSection');
+const noContent = document.getElementById('noContent');
+const allList = document.getElementById('allList');
+const allEmpty = document.getElementById('allEmpty');
 const searchResults = document.getElementById('searchResults');
 const searchResultsList = document.getElementById('searchResultsList');
 const noResults = document.getElementById('noResults');
@@ -130,6 +134,7 @@ const photoRemove = document.getElementById('photoRemove');
 const cancelForm = document.getElementById('cancelForm');
 const closeFormModal = document.getElementById('closeFormModal');
 const toast = document.getElementById('toast');
+const tabs = document.getElementById('tabs');
 
 // Элементы карточки
 const cardPhoto = document.getElementById('cardPhoto');
@@ -147,6 +152,7 @@ const closeCard = document.getElementById('closeCard');
 let allDrugs = [];
 let currentCardDrug = null;
 let searchVisible = false;
+let currentTab = 'main';
 
 // === ИНИЦИАЛИЗАЦИЯ ===
 function initMonthYear() {
@@ -172,13 +178,17 @@ function initMonthYear() {
 async function init() {
     await openDB();
     initMonthYear();
-    await refreshList();
+    await refreshAll();
 }
 
-// === ОТРИСОВКА ГЛАВНОГО ЭКРАНА ===
-async function refreshList() {
+// === ОТРИСОВКА ===
+async function refreshAll() {
     allDrugs = await getAllDrugs();
+    renderMainTab();
+    renderAllTab();
+}
 
+function renderMainTab() {
     const expired = [];
     const soon = [];
 
@@ -193,25 +203,13 @@ async function refreshList() {
 
     expiredSection.classList.toggle('hidden', expired.length === 0);
     soonSection.classList.toggle('hidden', soon.length === 0);
+    noContent.classList.toggle('hidden', expired.length > 0 || soon.length > 0);
+}
 
-    const hasContent = expired.length > 0 || soon.length > 0;
-    const noContentDiv = document.getElementById('noContent');
-    if (!hasContent) {
-        if (!noContentDiv) {
-            const div = document.createElement('div');
-            div.id = 'noContent';
-            div.style.cssText = 'text-align:center;color:#5a5d63;padding:40px 0;font-size:0.9rem;';
-            div.textContent = 'Всё в порядке';
-            mainContent.appendChild(div);
-        }
-    } else {
-        if (noContentDiv) noContentDiv.remove();
-    }
-
-    // Если поиск открыт и есть текст — обновить результаты
-    if (searchVisible && searchInput.value.trim() !== '') {
-        doSearch();
-    }
+function renderAllTab() {
+    const sorted = [...allDrugs].sort((a, b) => a.name.localeCompare(b.name, 'ru'));
+    renderDrugList(allList, sorted);
+    allEmpty.classList.toggle('hidden', sorted.length > 0);
 }
 
 function renderDrugList(container, drugs) {
@@ -245,6 +243,29 @@ function renderDrugList(container, drugs) {
     });
 }
 
+// === ВКЛАДКИ ===
+tabs.addEventListener('click', (e) => {
+    if (e.target.classList.contains('tab')) {
+        const tab = e.target.dataset.tab;
+        switchTab(tab);
+    }
+});
+
+function switchTab(tab) {
+    currentTab = tab;
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    document.querySelector(`[data-tab="${tab}"]`).classList.add('active');
+
+    mainContent.classList.toggle('active', tab === 'main');
+    allContent.classList.toggle('active', tab === 'all');
+
+    // Скрыть поиск при переключении
+    searchResults.classList.add('hidden');
+    searchContainer.classList.add('hidden');
+    searchVisible = false;
+    searchInput.value = '';
+}
+
 // === ПОИСК ===
 searchToggle.addEventListener('click', () => {
     searchVisible = !searchVisible;
@@ -255,7 +276,13 @@ searchToggle.addEventListener('click', () => {
         searchContainer.classList.add('hidden');
         searchInput.value = '';
         searchResults.classList.add('hidden');
-        mainContent.classList.remove('hidden');
+        if (currentTab === 'main') {
+            mainContent.classList.add('active');
+            allContent.classList.remove('active');
+        } else {
+            allContent.classList.add('active');
+            mainContent.classList.remove('active');
+        }
     }
 });
 
@@ -264,18 +291,18 @@ searchInput.addEventListener('input', () => {
 
     if (query === '') {
         searchResults.classList.add('hidden');
-        mainContent.classList.remove('hidden');
+        if (currentTab === 'main') {
+            mainContent.classList.add('active');
+            allContent.classList.remove('active');
+        } else {
+            allContent.classList.add('active');
+            mainContent.classList.remove('active');
+        }
         return;
     }
 
-    doSearch();
-});
-
-function doSearch() {
-    const query = searchInput.value.trim().toLowerCase();
-    if (query === '') return;
-
-    mainContent.classList.add('hidden');
+    mainContent.classList.remove('active');
+    allContent.classList.remove('active');
     searchResults.classList.remove('hidden');
 
     const filtered = allDrugs.filter(d =>
@@ -297,7 +324,7 @@ function doSearch() {
             searchResults.classList.add('hidden');
             searchContainer.classList.add('hidden');
             searchVisible = false;
-            mainContent.classList.remove('hidden');
+            switchTab('main');
             openCard(d);
         });
 
@@ -321,7 +348,7 @@ function doSearch() {
         `;
         searchResultsList.appendChild(card);
     });
-}
+});
 
 // === ДОБАВЛЕНИЕ ===
 addButton.addEventListener('click', () => openForm(null));
@@ -401,13 +428,8 @@ photoInput.addEventListener('change', (e) => {
 
 photoRemove.addEventListener('click', clearPhoto);
 
-cancelForm.addEventListener('click', () => {
-    formModal.classList.add('hidden');
-});
-
-closeFormModal.addEventListener('click', () => {
-    formModal.classList.add('hidden');
-});
+cancelForm.addEventListener('click', () => formModal.classList.add('hidden'));
+closeFormModal.addEventListener('click', () => formModal.classList.add('hidden'));
 
 drugForm.addEventListener('submit', async (e) => {
     e.preventDefault();
@@ -436,7 +458,7 @@ drugForm.addEventListener('submit', async (e) => {
     }
 
     formModal.classList.add('hidden');
-    await refreshList();
+    await refreshAll();
 });
 
 // === КАРТОЧКА ===
@@ -470,12 +492,10 @@ deleteFromCard.addEventListener('click', async () => {
     await deleteDrug(currentCardDrug.id);
     cardModal.classList.add('hidden');
     showToast('Лекарство удалено');
-    await refreshList();
+    await refreshAll();
 });
 
-closeCard.addEventListener('click', () => {
-    cardModal.classList.add('hidden');
-});
+closeCard.addEventListener('click', () => cardModal.classList.add('hidden'));
 
 // Закрытие модалок по фону
 document.querySelectorAll('.modal-backdrop').forEach(bg => {
