@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>Домашняя аптечка</title>
-    <link rel="stylesheet" href="style.css?v=6">
+    <link rel="stylesheet" href="style.css?v=7">
     <link rel="manifest" href="manifest.json">
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>💊</text></svg>">
 </head>
@@ -77,12 +77,20 @@
             <form id="drugForm" autocomplete="off">
                 <input type="hidden" id="drugId">
 
-                <label>Тип</label>
-                <div class="checkbox-group" id="tagCheckboxes">
-                    <label class="checkbox-label"><input type="checkbox" value="Лекарство"> Лекарство</label>
-                    <label class="checkbox-label"><input type="checkbox" value="Расходник"> Расходник</label>
-                    <label class="checkbox-label"><input type="checkbox" value="Деревянный ящик"> Деревянный ящик</label>
-                    <label class="checkbox-label"><input type="checkbox" value="Красный ящик"> Красный ящик</label>
+                <label for="tagDropdown">Тип</label>
+                <div class="multiselect" id="multiselect">
+                    <div class="multiselect-display" id="multiselectDisplay">
+                        <span class="multiselect-placeholder">Выберите тип</span>
+                    </div>
+                    <svg class="multiselect-arrow" width="12" height="8" viewBox="0 0 12 8" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
+                        <path d="M1 1l5 5 5-5"/>
+                    </svg>
+                    <div class="multiselect-dropdown hidden" id="multiselectDropdown">
+                        <label class="multiselect-option"><input type="checkbox" value="Лекарство"> Лекарство</label>
+                        <label class="multiselect-option"><input type="checkbox" value="Расходник"> Расходник</label>
+                        <label class="multiselect-option"><input type="checkbox" value="Деревянный ящик"> Деревянный ящик</label>
+                        <label class="multiselect-option"><input type="checkbox" value="Красный ящик"> Красный ящик</label>
+                    </div>
                 </div>
 
                 <label for="nameInput">Название *</label>
