@@ -273,7 +273,7 @@ function renderDrugList(container, drugs) {
             '<div class="drug-info">' +
                 '<div class="drug-name">' + escapeHTML(d.name || '') + '</div>' +
                 '<div class="drug-substance">' + escapeHTML(d.substance || '') + '</div>' +
-                '<span class="drug-tag">' + escapeHTML(tagLabel) + '</span>' +
+                '<span class="drug-tag tag-' + escapeHTML(tagLabel) + '">' + escapeHTML(tagLabel) + '</span>' +
             '</div>' +
             '<div class="drug-meta">' +
                 '<div class="drug-expiry">до ' + formatDateShort(d.expiryDate) + '</div>' +
@@ -403,7 +403,7 @@ if (searchInput) {
                 '<div class="drug-info">' +
                     '<div class="drug-name">' + escapeHTML(d.name || '') + '</div>' +
                     '<div class="drug-substance">' + escapeHTML(d.substance || '') + '</div>' +
-                    '<span class="drug-tag">' + escapeHTML(tagLabel) + '</span>' +
+                    '<span class="drug-tag tag-' + escapeHTML(tagLabel) + '">' + escapeHTML(tagLabel) + '</span>' +
                 '</div>' +
                 '<div class="drug-meta">' +
                     '<div class="drug-expiry">до ' + formatDateShort(d.expiryDate) + '</div>' +
@@ -550,7 +550,10 @@ if (drugForm) {
 function openCard(drug) {
     if (!cardModal) return;
     currentCardDrug = drug;
-    if (cardTag) cardTag.textContent = drug.tag || 'Лекарство';
+    if (cardTag) {
+        cardTag.textContent = drug.tag || 'Лекарство';
+        cardTag.className = 'card-tag tag-' + (drug.tag || 'Лекарство');
+    }
     if (cardName) cardName.textContent = drug.name || '';
     if (cardSubstance) cardSubstance.textContent = drug.substance || '';
     if (cardPack) cardPack.textContent = drug.packSize || '—';
