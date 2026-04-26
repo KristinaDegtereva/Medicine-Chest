@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>Домашняя аптечка</title>
-    <link rel="stylesheet" href="style.css?v=4">
+    <link rel="stylesheet" href="style.css?v=5">
     <link rel="manifest" href="manifest.json">
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>💊</text></svg>">
 </head>
@@ -47,6 +47,9 @@
 
     <!-- Все лекарства -->
     <div id="allContent" class="tab-content">
+        <div class="tag-filter" id="tagFilter">
+            <button class="tag-btn active" data-tag="all">Все</button>
+        </div>
         <div id="allList" class="drug-list"></div>
         <div id="allEmpty" class="empty-state hidden">Список пуст</div>
     </div>
@@ -58,7 +61,7 @@
     </div>
 
     <!-- Кнопка добавления -->
-    <button id="addButton" class="fab" aria-label="Добавить лекарство">+</button>
+    <button id="addButton" class="fab" aria-label="Добавить">+</button>
 
     <!-- Модальное окно: Форма -->
     <div id="formModal" class="modal hidden">
@@ -73,6 +76,12 @@
             <h2 id="formTitle">Новое лекарство</h2>
             <form id="drugForm" autocomplete="off">
                 <input type="hidden" id="drugId">
+
+                <label for="tagInput">Тип</label>
+                <select id="tagInput">
+                    <option value="Лекарство">Лекарство</option>
+                    <option value="Расходник">Расходник</option>
+                </select>
 
                 <label for="nameInput">Название *</label>
                 <input type="text" id="nameInput" required placeholder="Название препарата">
@@ -128,6 +137,7 @@
                 <div id="cardPhotoPlaceholder" class="card-photo-placeholder hidden"></div>
                 <div class="photo-dots" id="photoDots"></div>
             </div>
+            <span class="card-tag" id="cardTag"></span>
             <h2 id="cardName"></h2>
             <p id="cardSubstance" class="card-subtext"></p>
             <div class="card-details">
@@ -152,7 +162,7 @@
     </div>
 
     <!-- Уведомление -->
-    <div id="toast" class="toast hidden">Лекарство удалено</div>
+    <div id="toast" class="toast hidden">Удалено</div>
 
     <script src="app.js"></script>
 
