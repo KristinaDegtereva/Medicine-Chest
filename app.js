@@ -81,9 +81,9 @@ function getStatus(expiryDate) {
 
 function formatDate(dateString) {
     const d = new Date(dateString);
-    const months = ['Январь', 'Февраль', 'Март', 'Апрель', 'Май', 'Июнь',
-                    'Июль', 'Август', 'Сентябрь', 'Октябрь', 'Ноябрь', 'Декабрь'];
-    return months[d.getMonth()] + ' ' + d.getFullYear();
+    const months = ['Января', 'Февраля', 'Марта', 'Апреля', 'Мая', 'Июня',
+                    'Июля', 'Августа', 'Сентября', 'Октября', 'Ноября', 'Декабря'];
+    return d.getDate() + ' ' + months[d.getMonth()] + ' ' + d.getFullYear();
 }
 
 function formatDateShort(dateString) {
@@ -99,6 +99,8 @@ function getMonthName(index) {
 }
 
 // === DOM-ЭЛЕМЕНТЫ ===
+const searchToggle = document.getElementById('searchToggle');
+const searchContainer = document.getElementById('searchContainer');
 const searchInput = document.getElementById('searchInput');
 const mainContent = document.getElementById('mainContent');
 const expiredList = document.getElementById('expiredList');
@@ -126,6 +128,7 @@ const photoButton = document.getElementById('photoButton');
 const photoPreview = document.getElementById('photoPreview');
 const photoRemove = document.getElementById('photoRemove');
 const cancelForm = document.getElementById('cancelForm');
+const closeFormModal = document.getElementById('closeFormModal');
 const toast = document.getElementById('toast');
 
 // Элементы карточки
@@ -143,6 +146,7 @@ const closeCard = document.getElementById('closeCard');
 // === СОСТОЯНИЕ ===
 let allDrugs = [];
 let currentCardDrug = null;
+let searchVisible = false;
 
 // === ИНИЦИАЛИЗАЦИЯ ===
 function initMonthYear() {
@@ -203,6 +207,11 @@ async function refreshList() {
     } else {
         if (noContentDiv) noContentDiv.remove();
     }
+
+    // Если поиск открыт и есть текст — обновить результаты
+    if (searchVisible && searchInput.value.trim() !== '') {
+        doSearch();
+    }
 }
 
 function renderDrugList(container, drugs) {
@@ -237,6 +246,19 @@ function renderDrugList(container, drugs) {
 }
 
 // === ПОИСК ===
+searchToggle.addEventListener('click', () => {
+    searchVisible = !searchVisible;
+    if (searchVisible) {
+        searchContainer.classList.remove('hidden');
+        searchInput.focus();
+    } else {
+        searchContainer.classList.add('hidden');
+        searchInput.value = '';
+        searchResults.classList.add('hidden');
+        mainContent.classList.remove('hidden');
+    }
+});
+
 searchInput.addEventListener('input', () => {
     const query = searchInput.value.trim().toLowerCase();
 
@@ -245,6 +267,13 @@ searchInput.addEventListener('input', () => {
         mainContent.classList.remove('hidden');
         return;
     }
+
+    doSearch();
+});
+
+function doSearch() {
+    const query = searchInput.value.trim().toLowerCase();
+    if (query === '') return;
 
     mainContent.classList.add('hidden');
     searchResults.classList.remove('hidden');
@@ -266,6 +295,8 @@ searchInput.addEventListener('input', () => {
         card.addEventListener('click', () => {
             searchInput.value = '';
             searchResults.classList.add('hidden');
+            searchContainer.classList.add('hidden');
+            searchVisible = false;
             mainContent.classList.remove('hidden');
             openCard(d);
         });
@@ -290,7 +321,7 @@ searchInput.addEventListener('input', () => {
         `;
         searchResultsList.appendChild(card);
     });
-});
+}
 
 // === ДОБАВЛЕНИЕ ===
 addButton.addEventListener('click', () => openForm(null));
@@ -371,6 +402,10 @@ photoInput.addEventListener('change', (e) => {
 photoRemove.addEventListener('click', clearPhoto);
 
 cancelForm.addEventListener('click', () => {
+    formModal.classList.add('hidden');
+});
+
+closeFormModal.addEventListener('click', () => {
     formModal.classList.add('hidden');
 });
 
