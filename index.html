@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>Домашняя аптечка</title>
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="style.css?v=4">
     <link rel="manifest" href="manifest.json">
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>💊</text></svg>">
 </head>
@@ -32,7 +32,7 @@
         <button class="tab" data-tab="all">Все лекарства</button>
     </nav>
 
-    <!-- Главный список (Просрочено + Скоро) -->
+    <!-- Главный список -->
     <main id="mainContent" class="tab-content active">
         <section id="expiredSection" class="group">
             <div class="group-header expired-header">Просрочено</div>
@@ -73,7 +73,6 @@
             <h2 id="formTitle">Новое лекарство</h2>
             <form id="drugForm" autocomplete="off">
                 <input type="hidden" id="drugId">
-                <input type="hidden" id="photoData">
 
                 <label for="nameInput">Название *</label>
                 <input type="text" id="nameInput" required placeholder="Название препарата">
@@ -99,10 +98,9 @@
                 </div>
 
                 <div class="photo-area" id="photoArea">
+                    <div class="photo-list" id="photoList"></div>
                     <button type="button" class="photo-btn" id="photoButton">+ Добавить фото</button>
-                    <input type="file" id="photoInput" accept="image/*" capture="environment" hidden>
-                    <img id="photoPreview" class="photo-preview hidden" alt="">
-                    <button type="button" class="photo-remove hidden" id="photoRemove">✕</button>
+                    <input type="file" id="photoInput" accept="image/*" hidden multiple>
                 </div>
 
                 <div class="form-actions">
@@ -125,9 +123,10 @@
                     <line x1="6" y1="6" x2="18" y2="18"/>
                 </svg>
             </button>
-            <div class="card-photo-container">
+            <div class="card-photo-container" id="cardPhotoContainer">
                 <img id="cardPhoto" class="card-photo hidden" alt="">
                 <div id="cardPhotoPlaceholder" class="card-photo-placeholder hidden"></div>
+                <div class="photo-dots" id="photoDots"></div>
             </div>
             <h2 id="cardName"></h2>
             <p id="cardSubstance" class="card-subtext"></p>
