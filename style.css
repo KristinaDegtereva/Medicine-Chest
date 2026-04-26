@@ -476,8 +476,10 @@ body {
 
 .tag-Лекарство { background: rgba(201, 169, 110, 0.15); color: #c9a96e; }
 .tag-Расходник { background: rgba(110, 160, 201, 0.15); color: #6ea0c9; }
-.tag-Деревянный-ящик { background: rgba(180, 140, 100, 0.18); color: #b48c64; }
-.tag-Красный-ящик { background: rgba(200, 100, 100, 0.18); color: #c86464; }
+.tag-Деревянный\ ящик,
+[class*="tag-Деревянный ящик"] { background: rgba(180, 140, 100, 0.18); color: #b48c64; }
+.tag-Красный\ ящик,
+[class*="tag-Красный ящик"] { background: rgba(200, 100, 100, 0.18); color: #c86464; }
 
 /* === MULTISELECT === */
 .multiselect {
