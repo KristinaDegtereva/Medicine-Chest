@@ -555,6 +555,7 @@ form select {
     max-height: 220px;
     object-fit: cover;
     border-radius: var(--radius);
+    cursor: pointer;
 }
 
 .card-photo-placeholder {
