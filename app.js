@@ -175,7 +175,8 @@ function initMonthYear() {
     const now = new Date();
     monthInput.value = now.getMonth();
     yearInput.innerHTML = '';
-    for (let y = now.getFullYear(); y <= now.getFullYear() + 10; y++) {
+    // Добавляем года от (текущий - 10) до (текущий + 10)
+    for (let y = now.getFullYear() - 10; y <= now.getFullYear() + 10; y++) {
         const option = document.createElement('option');
         option.value = y;
         option.textContent = y;
@@ -183,7 +184,6 @@ function initMonthYear() {
     }
     yearInput.value = now.getFullYear() + 2;
 }
-
 async function init() {
     await openDB();
     initMonthYear();
