@@ -463,6 +463,7 @@ body {
 }
 
 /* Цвета тегов */
+./* Цвета тегов */
 .tag-Лекарство,
 .card-tag.tag-Лекарство,
 .drug-tag.tag-Лекарство {
@@ -475,6 +476,20 @@ body {
 .drug-tag.tag-Расходник {
     background: rgba(110, 160, 201, 0.15);
     color: #6ea0c9;
+}
+
+.tag-Деревянный-ящик,
+.card-tag.tag-Деревянный-ящик,
+.drug-tag.tag-Деревянный-ящик {
+    background: rgba(160, 140, 110, 0.15);
+    color: #a08c6e;
+}
+
+.tag-Красный-ящик,
+.card-tag.tag-Красный-ящик,
+.drug-tag.tag-Красный-ящик {
+    background: rgba(201, 110, 110, 0.15);
+    color: #c96e6e;
 }
 
 /* === ФОРМА === */
