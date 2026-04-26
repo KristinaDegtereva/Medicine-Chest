@@ -63,10 +63,19 @@ function deleteDrug(id) {
 }
 
 // === ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ ===
+function parseExpiryDate(dateString) {
+    // Формат: "YYYY-MM-DD" или "YYYY-MM"
+    const parts = dateString.split('-');
+    const year = parseInt(parts[0]);
+    const month = parseInt(parts[1]) - 1; // JS: 0-11
+    const day = parts[2] ? parseInt(parts[2]) : 1;
+    return new Date(year, month, day);
+}
+
 function getStatus(expiryDate) {
     const now = new Date();
     now.setHours(0, 0, 0, 0);
-    const expiry = new Date(expiryDate);
+    const expiry = parseExpiryDate(expiryDate);
     expiry.setHours(0, 0, 0, 0);
 
     if (expiry < now) return 'expired';
@@ -80,14 +89,14 @@ function getStatus(expiryDate) {
 }
 
 function formatDate(dateString) {
-    const d = new Date(dateString);
+    const d = parseExpiryDate(dateString);
     const months = ['Января', 'Февраля', 'Марта', 'Апреля', 'Мая', 'Июня',
                     'Июля', 'Августа', 'Сентября', 'Октября', 'Ноября', 'Декабря'];
     return d.getDate() + ' ' + months[d.getMonth()] + ' ' + d.getFullYear();
 }
 
 function formatDateShort(dateString) {
-    const d = new Date(dateString);
+    const d = parseExpiryDate(dateString);
     const month = String(d.getMonth() + 1).padStart(2, '0');
     return month + '.' + d.getFullYear();
 }
@@ -214,7 +223,11 @@ function renderAllTab() {
 
 function renderDrugList(container, drugs) {
     container.innerHTML = '';
-    drugs.sort((a, b) => new Date(a.expiryDate) - new Date(b.expiryDate));
+    drugs.sort((a, b) => {
+        const da = parseExpiryDate(a.expiryDate);
+        const db_ = parseExpiryDate(b.expiryDate);
+        return da - db_;
+    });
 
     drugs.forEach(d => {
         const card = document.createElement('div');
@@ -259,7 +272,6 @@ function switchTab(tab) {
     mainContent.classList.toggle('active', tab === 'main');
     allContent.classList.toggle('active', tab === 'all');
 
-    // Скрыть поиск при переключении
     searchResults.classList.add('hidden');
     searchContainer.classList.add('hidden');
     searchVisible = false;
@@ -313,7 +325,11 @@ searchInput.addEventListener('input', () => {
     searchResultsList.innerHTML = '';
     noResults.classList.toggle('hidden', filtered.length > 0);
 
-    filtered.sort((a, b) => new Date(a.expiryDate) - new Date(b.expiryDate));
+    filtered.sort((a, b) => {
+        const da = parseExpiryDate(a.expiryDate);
+        const db_ = parseExpiryDate(b.expiryDate);
+        return da - db_;
+    });
 
     filtered.forEach(d => {
         const card = document.createElement('div');
@@ -363,7 +379,7 @@ function openForm(drug) {
         packInput.value = drug.packSize || '';
         remainingInput.value = drug.remaining || '';
         if (drug.expiryDate) {
-            const d = new Date(drug.expiryDate);
+            const d = parseExpiryDate(drug.expiryDate);
             monthInput.value = d.getMonth();
             yearInput.value = d.getFullYear();
         }
@@ -436,14 +452,14 @@ drugForm.addEventListener('submit', async (e) => {
 
     const month = parseInt(monthInput.value);
     const year = parseInt(yearInput.value);
-    const expiryDate = new Date(year, month, 1);
-    const expiryISO = expiryDate.toISOString().split('T')[0];
+    // Храним как YYYY-MM-DD, день всегда 1
+    const expiryDate = `${year}-${String(month + 1).padStart(2, '0')}-01`;
 
     const drug = {
         name: nameInput.value.trim(),
         substance: substanceInput.value.trim(),
         packSize: packInput.value.trim(),
-        expiryDate: expiryISO,
+        expiryDate: expiryDate,
         remaining: remainingInput.value.trim(),
         photo: photoData.value || null
     };
