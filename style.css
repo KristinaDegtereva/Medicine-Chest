@@ -112,7 +112,6 @@ body {
     color: var(--text);
 }
 
-/* === КОНТЕНТ ВКЛАДОК === */
 .tab-content {
     display: none;
 }
@@ -168,7 +167,6 @@ body {
     color: #c4a56a;
 }
 
-/* === ПУСТОЕ СОСТОЯНИЕ === */
 .empty-state {
     text-align: center;
     color: var(--text-muted);
@@ -419,13 +417,47 @@ form select {
     flex: 1;
 }
 
-/* === ФОТО === */
+/* === ФОТО В ФОРМЕ === */
 .photo-area {
     margin-top: 16px;
+}
+
+.photo-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 10px;
+}
+
+.photo-item {
+    position: relative;
+    width: 64px;
+    height: 64px;
+    border-radius: var(--radius-sm);
+    overflow: hidden;
+}
+
+.photo-item img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.photo-item-remove {
+    position: absolute;
+    top: 2px;
+    right: 2px;
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    background: rgba(0,0,0,0.7);
+    border: none;
+    color: #fff;
+    font-size: 0.7rem;
+    cursor: pointer;
     display: flex;
     align-items: center;
-    gap: 10px;
-    flex-wrap: wrap;
+    justify-content: center;
 }
 
 .photo-btn {
@@ -438,28 +470,11 @@ form select {
     cursor: pointer;
     transition: background var(--transition);
     font-family: inherit;
+    display: inline-block;
 }
 
 .photo-btn:active {
     background: var(--surface-hover);
-}
-
-.photo-preview {
-    width: 60px;
-    height: 60px;
-    border-radius: var(--radius-sm);
-    object-fit: cover;
-}
-
-.photo-remove {
-    width: 28px;
-    height: 28px;
-    border-radius: 50%;
-    background: var(--danger-bg);
-    border: none;
-    color: #c46a6a;
-    font-size: 0.85rem;
-    cursor: pointer;
 }
 
 /* === КНОПКИ ФОРМЫ === */
@@ -531,6 +546,7 @@ form select {
 
 /* === КАРТОЧКА ПРОСМОТРА === */
 .card-photo-container {
+    position: relative;
     margin-bottom: 16px;
 }
 
@@ -546,6 +562,25 @@ form select {
     height: 120px;
     background: var(--surface);
     border-radius: var(--radius);
+}
+
+.photo-dots {
+    display: flex;
+    justify-content: center;
+    gap: 6px;
+    margin-top: 8px;
+}
+
+.photo-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--text-muted);
+    transition: background var(--transition);
+}
+
+.photo-dot.active {
+    background: var(--accent);
 }
 
 .card-subtext {
