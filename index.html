@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Моя аптечка</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="manifest" href="manifest.json">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>💊</text></svg>">
+</head>
+<body>
+
+    <!-- Поиск -->
+    <div class="search-container">
+        <input type="text" id="searchInput" placeholder="Поиск..." autocomplete="off">
+    </div>
+
+    <!-- Главный список -->
+    <main id="mainContent">
+        <section id="expiredSection" class="group">
+            <div class="group-header expired-header">Просрочено</div>
+            <div id="expiredList" class="drug-list"></div>
+        </section>
+        <section id="soonSection" class="group">
+            <div class="group-header soon-header">Скоро</div>
+            <div id="soonList" class="drug-list"></div>
+        </section>
+    </main>
+
+    <!-- Результаты поиска (скрыты по умолчанию) -->
+    <div id="searchResults" class="search-results hidden">
+        <div id="searchResultsList" class="drug-list"></div>
+        <div id="noResults" class="no-results hidden">Ничего не найдено</div>
+    </div>
+
+    <!-- Кнопка добавления -->
+    <button id="addButton" class="fab" aria-label="Добавить лекарство">+</button>
+
+    <!-- Модальное окно: Добавление / Редактирование -->
+    <div id="formModal" class="modal hidden">
+        <div class="modal-backdrop"></div>
+        <div class="modal-content">
+            <h2 id="formTitle">Новое лекарство</h2>
+            <form id="drugForm" autocomplete="off">
+                <input type="hidden" id="drugId">
+                <input type="hidden" id="photoData">
+
+                <label for="nameInput">Название *</label>
+                <input type="text" id="nameInput" required placeholder="Нурофен">
+
+                <label for="substanceInput">Действующее вещество</label>
+                <input type="text" id="substanceInput" placeholder="Ибупрофен">
+
+                <label for="packInput">В упаковке</label>
+                <input type="text" id="packInput" placeholder="20 таб.">
+
+                <div class="row">
+                    <div class="field-half">
+                        <label for="monthInput">Срок *</label>
+                        <div class="select-row">
+                            <select id="monthInput" required></select>
+                            <select id="yearInput" required></select>
+                        </div>
+                    </div>
+                    <div class="field-half">
+                        <label for="remainingInput">Осталось</label>
+                        <input type="text" id="remainingInput" placeholder="7 таб.">
+                    </div>
+                </div>
+
+                <div class="photo-area" id="photoArea">
+                    <button type="button" class="photo-btn" id="photoButton">+ Добавить фото</button>
+                    <input type="file" id="photoInput" accept="image/*" capture="environment" hidden>
+                    <img id="photoPreview" class="photo-preview hidden" alt="">
+                    <button type="button" class="photo-remove hidden" id="photoRemove">✕</button>
+                </div>
+
+                <div class="form-actions">
+                    <button type="submit" class="btn-primary">Сохранить</button>
+                    <button type="button" class="btn-secondary" id="cancelForm">Отмена</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Модальное окно: Карточка -->
+    <div id="cardModal" class="modal hidden">
+        <div class="modal-backdrop"></div>
+        <div class="modal-content">
+            <div class="card-photo-container">
+                <img id="cardPhoto" class="card-photo hidden" alt="">
+                <div id="cardPhotoPlaceholder" class="card-photo-placeholder hidden"></div>
+            </div>
+            <h2 id="cardName"></h2>
+            <p id="cardSubstance" class="card-subtext"></p>
+            <div class="card-details">
+                <div class="card-row">
+                    <span>В упаковке</span>
+                    <span id="cardPack"></span>
+                </div>
+                <div class="card-row">
+                    <span>Срок годности</span>
+                    <span id="cardExpiry"></span>
+                </div>
+                <div class="card-row">
+                    <span>Осталось</span>
+                    <span id="cardRemaining"></span>
+                </div>
+            </div>
+            <div class="form-actions">
+                <button type="button" class="btn-primary" id="editFromCard">Изменить</button>
+                <button type="button" class="btn-danger" id="deleteFromCard">Удалить</button>
+            </div>
+            <button type="button" class="btn-secondary btn-close-card" id="closeCard">Закрыть</button>
+        </div>
+    </div>
+
+    <!-- Уведомление об удалении -->
+    <div id="toast" class="toast hidden">Лекарство удалено</div>
+
+    <script src="app.js"></script>
+
+</body>
+</html>
