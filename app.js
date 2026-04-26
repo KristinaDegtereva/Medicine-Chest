@@ -127,7 +127,7 @@ const cardModal = document.getElementById('cardModal');
 const drugForm = document.getElementById('drugForm');
 const formTitle = document.getElementById('formTitle');
 const drugId = document.getElementById('drugId');
-const tagInput = document.getElementById('tagInput');
+const tagCheckboxes = document.getElementById('tagCheckboxes');
 const nameInput = document.getElementById('nameInput');
 const substanceInput = document.getElementById('substanceInput');
 const packInput = document.getElementById('packInput');
@@ -144,7 +144,7 @@ const tabs = document.getElementById('tabs');
 
 const cardPhoto = document.getElementById('cardPhoto');
 const cardPhotoPlaceholder = document.getElementById('cardPhotoPlaceholder');
-const cardTag = document.getElementById('cardTag');
+const cardTags = document.getElementById('cardTags');
 const cardName = document.getElementById('cardName');
 const cardSubstance = document.getElementById('cardSubstance');
 const cardPack = document.getElementById('cardPack');
@@ -220,7 +220,10 @@ function renderAllTab() {
     if (!allList) return;
     let filtered = allDrugs;
     if (currentTagFilter !== 'all') {
-        filtered = allDrugs.filter(d => (d.tag || 'Лекарство') === currentTagFilter);
+        filtered = allDrugs.filter(function(d) {
+            var tags = d.tags || (d.tag ? [d.tag] : ['Лекарство']);
+            return tags.indexOf(currentTagFilter) !== -1;
+        });
     }
     const sorted = [...filtered].sort(function(a, b) {
         var nameA = (a.name || '').toLowerCase();
@@ -236,9 +239,12 @@ function renderAllTab() {
 function renderTagFilter() {
     if (!tagFilter) return;
     const tags = new Set();
-    allDrugs.forEach(d => tags.add(d.tag || 'Лекарство'));
+    allDrugs.forEach(function(d) {
+        var itemTags = d.tags || (d.tag ? [d.tag] : ['Лекарство']);
+        itemTags.forEach(function(t) { tags.add(t); });
+    });
     tagFilter.innerHTML = '<button class="tag-btn active" data-tag="all">Все</button>';
-    tags.forEach(tag => {
+    tags.forEach(function(tag) {
         const btn = document.createElement('button');
         btn.className = 'tag-btn';
         btn.dataset.tag = tag;
@@ -266,14 +272,18 @@ function renderDrugList(container, drugs) {
             photoHTML = '<div class="drug-thumb-placeholder">💊</div>';
         }
 
-        var tagLabel = d.tag || 'Лекарство';
+        var itemTags = d.tags || (d.tag ? [d.tag] : ['Лекарство']);
+        var tagsHTML = '';
+        itemTags.forEach(function(t) {
+            tagsHTML += '<span class="drug-tag tag-' + escapeHTML(t) + '">' + escapeHTML(t) + '</span>';
+        });
 
         card.innerHTML =
             photoHTML +
             '<div class="drug-info">' +
                 '<div class="drug-name">' + escapeHTML(d.name || '') + '</div>' +
                 '<div class="drug-substance">' + escapeHTML(d.substance || '') + '</div>' +
-                '<span class="drug-tag tag-' + escapeHTML(tagLabel) + '">' + escapeHTML(tagLabel) + '</span>' +
+                '<div class="drug-tags-row">' + tagsHTML + '</div>' +
             '</div>' +
             '<div class="drug-meta">' +
                 '<div class="drug-expiry">до ' + formatDateShort(d.expiryDate) + '</div>' +
@@ -301,7 +311,7 @@ if (tagFilter) {
     tagFilter.addEventListener('click', function(e) {
         if (e.target.classList.contains('tag-btn')) {
             currentTagFilter = e.target.dataset.tag;
-            document.querySelectorAll('.tag-btn').forEach(b => b.classList.remove('active'));
+            document.querySelectorAll('.tag-btn').forEach(function(b) { b.classList.remove('active'); });
             e.target.classList.add('active');
             renderAllTab();
         }
@@ -397,13 +407,17 @@ if (searchInput) {
             } else {
                 photoHTML = '<div class="drug-thumb-placeholder">💊</div>';
             }
-            var tagLabel = d.tag || 'Лекарство';
+            var itemTags = d.tags || (d.tag ? [d.tag] : ['Лекарство']);
+            var tagsHTML = '';
+            itemTags.forEach(function(t) {
+                tagsHTML += '<span class="drug-tag tag-' + escapeHTML(t) + '">' + escapeHTML(t) + '</span>';
+            });
             card.innerHTML =
                 photoHTML +
                 '<div class="drug-info">' +
                     '<div class="drug-name">' + escapeHTML(d.name || '') + '</div>' +
                     '<div class="drug-substance">' + escapeHTML(d.substance || '') + '</div>' +
-                    '<span class="drug-tag tag-' + escapeHTML(tagLabel) + '">' + escapeHTML(tagLabel) + '</span>' +
+                    '<div class="drug-tags-row">' + tagsHTML + '</div>' +
                 '</div>' +
                 '<div class="drug-meta">' +
                     '<div class="drug-expiry">до ' + formatDateShort(d.expiryDate) + '</div>' +
@@ -474,6 +488,24 @@ function renderTempPhotos() {
     });
 }
 
+function getSelectedTags() {
+    if (!tagCheckboxes) return ['Лекарство'];
+    var checked = tagCheckboxes.querySelectorAll('input[type="checkbox"]:checked');
+    var tags = [];
+    checked.forEach(function(cb) { tags.push(cb.value); });
+    return tags.length > 0 ? tags : ['Лекарство'];
+}
+
+function setSelectedTags(tags) {
+    if (!tagCheckboxes) return;
+    var checkboxes = tagCheckboxes.querySelectorAll('input[type="checkbox"]');
+    checkboxes.forEach(function(cb) { cb.checked = false; });
+    tags.forEach(function(tag) {
+        var cb = tagCheckboxes.querySelector('input[value="' + tag + '"]');
+        if (cb) cb.checked = true;
+    });
+}
+
 function openForm(drug) {
     if (!formModal) return;
     tempPhotos = [];
@@ -481,7 +513,8 @@ function openForm(drug) {
     if (drug) {
         if (formTitle) formTitle.textContent = 'Редактировать';
         if (drugId) drugId.value = drug.id;
-        if (tagInput) tagInput.value = drug.tag || 'Лекарство';
+        var existingTags = drug.tags || (drug.tag ? [drug.tag] : ['Лекарство']);
+        setSelectedTags(existingTags);
         if (nameInput) nameInput.value = drug.name || '';
         if (substanceInput) substanceInput.value = drug.substance || '';
         if (packInput) packInput.value = drug.packSize || '';
@@ -496,7 +529,7 @@ function openForm(drug) {
     } else {
         if (formTitle) formTitle.textContent = 'Новое лекарство';
         if (drugId) drugId.value = '';
-        if (tagInput) tagInput.value = 'Лекарство';
+        setSelectedTags(['Лекарство']);
         if (drugForm) drugForm.reset();
         initMonthYear();
         renderTempPhotos();
@@ -523,7 +556,7 @@ if (drugForm) {
         var expiryDate = year + '-' + String(month + 1).padStart(2, '0') + '-01';
 
         var drug = {
-            tag: tagInput ? tagInput.value : 'Лекарство',
+            tags: getSelectedTags(),
             name: nameInput ? nameInput.value.trim() : '',
             substance: substanceInput ? substanceInput.value.trim() : '',
             packSize: packInput ? packInput.value.trim() : '',
@@ -550,10 +583,19 @@ if (drugForm) {
 function openCard(drug) {
     if (!cardModal) return;
     currentCardDrug = drug;
-    if (cardTag) {
-        cardTag.textContent = drug.tag || 'Лекарство';
-        cardTag.className = 'card-tag tag-' + (drug.tag || 'Лекарство');
+
+    // Теги
+    if (cardTags) {
+        cardTags.innerHTML = '';
+        var itemTags = drug.tags || (drug.tag ? [drug.tag] : ['Лекарство']);
+        itemTags.forEach(function(t) {
+            var span = document.createElement('span');
+            span.className = 'card-tag tag-' + t;
+            span.textContent = t;
+            cardTags.appendChild(span);
+        });
     }
+
     if (cardName) cardName.textContent = drug.name || '';
     if (cardSubstance) cardSubstance.textContent = drug.substance || '';
     if (cardPack) cardPack.textContent = drug.packSize || '—';
