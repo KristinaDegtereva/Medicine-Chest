@@ -14,20 +14,26 @@
     <header class="header">
         <h1 class="header-title">Домашняя аптечка</h1>
         <button class="search-toggle" id="searchToggle" aria-label="Поиск">
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
                 <circle cx="11" cy="11" r="8"/>
                 <line x1="21" y1="21" x2="16.65" y2="16.65"/>
             </svg>
         </button>
     </header>
 
-    <!-- Поиск (скрыт по умолчанию) -->
+    <!-- Поиск -->
     <div class="search-container hidden" id="searchContainer">
         <input type="text" id="searchInput" placeholder="Поиск лекарств..." autocomplete="off">
     </div>
 
-    <!-- Главный список -->
-    <main id="mainContent">
+    <!-- Вкладки -->
+    <nav class="tabs" id="tabs">
+        <button class="tab active" data-tab="main">Аптечка</button>
+        <button class="tab" data-tab="all">Все лекарства</button>
+    </nav>
+
+    <!-- Главный список (Просрочено + Скоро) -->
+    <main id="mainContent" class="tab-content active">
         <section id="expiredSection" class="group">
             <div class="group-header expired-header">Просрочено</div>
             <div id="expiredList" class="drug-list"></div>
@@ -36,9 +42,16 @@
             <div class="group-header soon-header">Скоро</div>
             <div id="soonList" class="drug-list"></div>
         </section>
+        <div id="noContent" class="empty-state hidden">Всё в порядке</div>
     </main>
 
-    <!-- Результаты поиска (скрыты по умолчанию) -->
+    <!-- Все лекарства -->
+    <div id="allContent" class="tab-content">
+        <div id="allList" class="drug-list"></div>
+        <div id="allEmpty" class="empty-state hidden">Список пуст</div>
+    </div>
+
+    <!-- Результаты поиска -->
     <div id="searchResults" class="search-results hidden">
         <div id="searchResultsList" class="drug-list"></div>
         <div id="noResults" class="no-results hidden">Ничего не найдено</div>
@@ -47,19 +60,17 @@
     <!-- Кнопка добавления -->
     <button id="addButton" class="fab" aria-label="Добавить лекарство">+</button>
 
-    <!-- Модальное окно: Добавление / Редактирование -->
+    <!-- Модальное окно: Форма -->
     <div id="formModal" class="modal hidden">
         <div class="modal-backdrop"></div>
         <div class="modal-content">
-            <div class="modal-top">
-                <h2 id="formTitle">Новое лекарство</h2>
-                <button type="button" class="modal-close" id="closeFormModal" aria-label="Закрыть">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
-                        <line x1="18" y1="6" x2="6" y2="18"/>
-                        <line x1="6" y1="6" x2="18" y2="18"/>
-                    </svg>
-                </button>
-            </div>
+            <button type="button" class="modal-close" id="closeFormModal" aria-label="Закрыть">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                    <line x1="18" y1="6" x2="6" y2="18"/>
+                    <line x1="6" y1="6" x2="18" y2="18"/>
+                </svg>
+            </button>
+            <h2 id="formTitle">Новое лекарство</h2>
             <form id="drugForm" autocomplete="off">
                 <input type="hidden" id="drugId">
                 <input type="hidden" id="photoData">
@@ -108,15 +119,12 @@
     <div id="cardModal" class="modal hidden">
         <div class="modal-backdrop"></div>
         <div class="modal-content">
-            <div class="modal-top">
-                <h2></h2>
-                <button type="button" class="modal-close" id="closeCard" aria-label="Закрыть">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
-                        <line x1="18" y1="6" x2="6" y2="18"/>
-                        <line x1="6" y1="6" x2="18" y2="18"/>
-                    </svg>
-                </button>
-            </div>
+            <button type="button" class="modal-close" id="closeCard" aria-label="Закрыть">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                    <line x1="18" y1="6" x2="6" y2="18"/>
+                    <line x1="6" y1="6" x2="18" y2="18"/>
+                </svg>
+            </button>
             <div class="card-photo-container">
                 <img id="cardPhoto" class="card-photo hidden" alt="">
                 <div id="cardPhotoPlaceholder" class="card-photo-placeholder hidden"></div>
@@ -144,7 +152,7 @@
         </div>
     </div>
 
-    <!-- Уведомление об удалении -->
+    <!-- Уведомление -->
     <div id="toast" class="toast hidden">Лекарство удалено</div>
 
     <script src="app.js"></script>
