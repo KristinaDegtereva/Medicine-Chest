@@ -1,6 +1,6 @@
 // === БАЗА ДАННЫХ (IndexedDB) ===
 const DB_NAME = 'AptechkaDB';
-const DB_VERSION = 1;
+const DB_VERSION = 2;
 let db;
 
 function openDB() {
@@ -12,6 +12,13 @@ function openDB() {
                 const store = db.createObjectStore('drugs', { keyPath: 'id', autoIncrement: true });
                 store.createIndex('name', 'name', { unique: false });
                 store.createIndex('expiryDate', 'expiryDate', { unique: false });
+            } else {
+                // Миграция: добавляем поле photos, если его нет
+                const tx = e.target.transaction;
+                const store = tx.objectStore('drugs');
+                if (!store.indexNames.contains('photos')) {
+                    // Просто обновим версию, данные останутся
+                }
             }
         };
         request.onsuccess = (e) => {
@@ -62,12 +69,11 @@ function deleteDrug(id) {
     });
 }
 
-// === ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ ===
+// === ВСПОМОГАТЕЛЬНЫЕ ===
 function parseExpiryDate(dateString) {
-    // Формат: "YYYY-MM-DD" или "YYYY-MM"
     const parts = dateString.split('-');
     const year = parseInt(parts[0]);
-    const month = parseInt(parts[1]) - 1; // JS: 0-11
+    const month = parseInt(parts[1]) - 1;
     const day = parts[2] ? parseInt(parts[2]) : 1;
     return new Date(year, month, day);
 }
@@ -77,13 +83,10 @@ function getStatus(expiryDate) {
     now.setHours(0, 0, 0, 0);
     const expiry = parseExpiryDate(expiryDate);
     expiry.setHours(0, 0, 0, 0);
-
     if (expiry < now) return 'expired';
-
     const threeMonths = new Date();
     threeMonths.setMonth(threeMonths.getMonth() + 3);
     threeMonths.setHours(0, 0, 0, 0);
-
     if (expiry <= threeMonths) return 'soon';
     return 'ok';
 }
@@ -107,7 +110,7 @@ function getMonthName(index) {
     return months[index];
 }
 
-// === DOM-ЭЛЕМЕНТЫ ===
+// === DOM ===
 const searchToggle = document.getElementById('searchToggle');
 const searchContainer = document.getElementById('searchContainer');
 const searchInput = document.getElementById('searchInput');
@@ -138,14 +141,12 @@ const remainingInput = document.getElementById('remainingInput');
 const photoData = document.getElementById('photoData');
 const photoInput = document.getElementById('photoInput');
 const photoButton = document.getElementById('photoButton');
-const photoPreview = document.getElementById('photoPreview');
-const photoRemove = document.getElementById('photoRemove');
+const photoList = document.getElementById('photoList');
 const cancelForm = document.getElementById('cancelForm');
 const closeFormModal = document.getElementById('closeFormModal');
 const toast = document.getElementById('toast');
 const tabs = document.getElementById('tabs');
 
-// Элементы карточки
 const cardPhoto = document.getElementById('cardPhoto');
 const cardPhotoPlaceholder = document.getElementById('cardPhotoPlaceholder');
 const cardName = document.getElementById('cardName');
@@ -156,12 +157,14 @@ const cardRemaining = document.getElementById('cardRemaining');
 const editFromCard = document.getElementById('editFromCard');
 const deleteFromCard = document.getElementById('deleteFromCard');
 const closeCard = document.getElementById('closeCard');
+const photoDots = document.getElementById('photoDots');
 
 // === СОСТОЯНИЕ ===
 let allDrugs = [];
 let currentCardDrug = null;
 let searchVisible = false;
 let currentTab = 'main';
+let tempPhotos = []; // временные фото при добавлении/редактировании
 
 // === ИНИЦИАЛИЗАЦИЯ ===
 function initMonthYear() {
@@ -175,7 +178,6 @@ function initMonthYear() {
     const now = new Date();
     monthInput.value = now.getMonth();
     yearInput.innerHTML = '';
-    // Добавляем года от (текущий - 10) до (текущий + 10)
     for (let y = now.getFullYear() - 10; y <= now.getFullYear() + 10; y++) {
         const option = document.createElement('option');
         option.value = y;
@@ -184,6 +186,7 @@ function initMonthYear() {
     }
     yearInput.value = now.getFullYear() + 2;
 }
+
 async function init() {
     await openDB();
     initMonthYear();
@@ -200,22 +203,20 @@ async function refreshAll() {
 function renderMainTab() {
     const expired = [];
     const soon = [];
-
     allDrugs.forEach(d => {
         const status = getStatus(d.expiryDate);
         if (status === 'expired') expired.push(d);
         else if (status === 'soon') soon.push(d);
     });
-
     renderDrugList(expiredList, expired);
     renderDrugList(soonList, soon);
-
     expiredSection.classList.toggle('hidden', expired.length === 0);
     soonSection.classList.toggle('hidden', soon.length === 0);
     noContent.classList.toggle('hidden', expired.length > 0 || soon.length > 0);
 }
 
 function renderAllTab() {
+    // Сортировка строго по алфавиту
     const sorted = [...allDrugs].sort((a, b) => a.name.localeCompare(b.name, 'ru'));
     renderDrugList(allList, sorted);
     allEmpty.classList.toggle('hidden', sorted.length > 0);
@@ -223,20 +224,16 @@ function renderAllTab() {
 
 function renderDrugList(container, drugs) {
     container.innerHTML = '';
-    drugs.sort((a, b) => {
-        const da = parseExpiryDate(a.expiryDate);
-        const db_ = parseExpiryDate(b.expiryDate);
-        return da - db_;
-    });
-
+    // Не сортируем здесь — порядок задаётся выше
     drugs.forEach(d => {
         const card = document.createElement('div');
         card.className = 'drug-card ' + getStatus(d.expiryDate);
         card.addEventListener('click', () => openCard(d));
 
         let photoHTML = '';
-        if (d.photo) {
-            photoHTML = `<img src="${d.photo}" class="drug-thumb" alt="">`;
+        const firstPhoto = getFirstPhoto(d);
+        if (firstPhoto) {
+            photoHTML = `<img src="${firstPhoto}" class="drug-thumb" alt="">`;
         } else {
             photoHTML = `<div class="drug-thumb-placeholder">💊</div>`;
         }
@@ -256,11 +253,22 @@ function renderDrugList(container, drugs) {
     });
 }
 
+function getFirstPhoto(drug) {
+    if (drug.photos && drug.photos.length > 0) return drug.photos[0];
+    if (drug.photo) return drug.photo;
+    return null;
+}
+
+function getAllPhotos(drug) {
+    if (drug.photos && drug.photos.length > 0) return drug.photos;
+    if (drug.photo) return [drug.photo];
+    return [];
+}
+
 // === ВКЛАДКИ ===
 tabs.addEventListener('click', (e) => {
     if (e.target.classList.contains('tab')) {
-        const tab = e.target.dataset.tab;
-        switchTab(tab);
+        switchTab(e.target.dataset.tab);
     }
 });
 
@@ -268,10 +276,8 @@ function switchTab(tab) {
     currentTab = tab;
     document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
     document.querySelector(`[data-tab="${tab}"]`).classList.add('active');
-
     mainContent.classList.toggle('active', tab === 'main');
     allContent.classList.toggle('active', tab === 'all');
-
     searchResults.classList.add('hidden');
     searchContainer.classList.add('hidden');
     searchVisible = false;
@@ -300,7 +306,6 @@ searchToggle.addEventListener('click', () => {
 
 searchInput.addEventListener('input', () => {
     const query = searchInput.value.trim().toLowerCase();
-
     if (query === '') {
         searchResults.classList.add('hidden');
         if (currentTab === 'main') {
@@ -312,25 +317,16 @@ searchInput.addEventListener('input', () => {
         }
         return;
     }
-
     mainContent.classList.remove('active');
     allContent.classList.remove('active');
     searchResults.classList.remove('hidden');
-
     const filtered = allDrugs.filter(d =>
         d.name.toLowerCase().includes(query) ||
         (d.substance && d.substance.toLowerCase().includes(query))
     );
-
     searchResultsList.innerHTML = '';
     noResults.classList.toggle('hidden', filtered.length > 0);
-
-    filtered.sort((a, b) => {
-        const da = parseExpiryDate(a.expiryDate);
-        const db_ = parseExpiryDate(b.expiryDate);
-        return da - db_;
-    });
-
+    filtered.sort((a, b) => new Date(a.expiryDate) - new Date(b.expiryDate));
     filtered.forEach(d => {
         const card = document.createElement('div');
         const status = getStatus(d.expiryDate);
@@ -343,14 +339,13 @@ searchInput.addEventListener('input', () => {
             switchTab('main');
             openCard(d);
         });
-
         let photoHTML = '';
-        if (d.photo) {
-            photoHTML = `<img src="${d.photo}" class="drug-thumb" alt="">`;
+        const firstPhoto = getFirstPhoto(d);
+        if (firstPhoto) {
+            photoHTML = `<img src="${firstPhoto}" class="drug-thumb" alt="">`;
         } else {
             photoHTML = `<div class="drug-thumb-placeholder">💊</div>`;
         }
-
         card.innerHTML = `
             ${photoHTML}
             <div class="drug-info">
@@ -366,10 +361,58 @@ searchInput.addEventListener('input', () => {
     });
 });
 
-// === ДОБАВЛЕНИЕ ===
+// === ДОБАВЛЕНИЕ / ФОТО ===
 addButton.addEventListener('click', () => openForm(null));
 
+photoButton.addEventListener('click', () => photoInput.click());
+
+photoInput.addEventListener('change', (e) => {
+    const files = Array.from(e.target.files);
+    files.forEach(file => {
+        const reader = new FileReader();
+        reader.onload = (ev) => {
+            const img = new Image();
+            img.onload = () => {
+                const canvas = document.createElement('canvas');
+                const MAX = 400;
+                let w = img.width;
+                let h = img.height;
+                if (w > h) { if (w > MAX) { h *= MAX / w; w = MAX; } }
+                else { if (h > MAX) { w *= MAX / h; h = MAX; } }
+                canvas.width = w;
+                canvas.height = h;
+                const ctx = canvas.getContext('2d');
+                ctx.drawImage(img, 0, 0, w, h);
+                const data = canvas.toDataURL('image/jpeg', 0.7);
+                tempPhotos.push(data);
+                renderTempPhotos();
+            };
+            img.src = ev.target.result;
+        };
+        reader.readAsDataURL(file);
+    });
+    photoInput.value = '';
+});
+
+function renderTempPhotos() {
+    photoList.innerHTML = '';
+    tempPhotos.forEach((photo, index) => {
+        const div = document.createElement('div');
+        div.className = 'photo-item';
+        div.innerHTML = `
+            <img src="${photo}" alt="">
+            <button type="button" class="photo-item-remove" data-index="${index}">✕</button>
+        `;
+        div.querySelector('.photo-item-remove').addEventListener('click', () => {
+            tempPhotos.splice(index, 1);
+            renderTempPhotos();
+        });
+        photoList.appendChild(div);
+    });
+}
+
 function openForm(drug) {
+    tempPhotos = [];
     formModal.classList.remove('hidden');
     if (drug) {
         formTitle.textContent = 'Редактировать';
@@ -383,76 +426,24 @@ function openForm(drug) {
             monthInput.value = d.getMonth();
             yearInput.value = d.getFullYear();
         }
-        if (drug.photo) {
-            photoData.value = drug.photo;
-            photoPreview.src = drug.photo;
-            photoPreview.classList.remove('hidden');
-            photoRemove.classList.remove('hidden');
-            photoButton.classList.add('hidden');
-        } else {
-            clearPhoto();
-        }
+        tempPhotos = getAllPhotos(drug);
+        renderTempPhotos();
     } else {
         formTitle.textContent = 'Новое лекарство';
         drugId.value = '';
         drugForm.reset();
         initMonthYear();
-        clearPhoto();
+        renderTempPhotos();
     }
 }
-
-function clearPhoto() {
-    photoData.value = '';
-    photoPreview.src = '';
-    photoPreview.classList.add('hidden');
-    photoRemove.classList.add('hidden');
-    photoButton.classList.remove('hidden');
-    photoInput.value = '';
-}
-
-photoButton.addEventListener('click', () => photoInput.click());
-
-photoInput.addEventListener('change', (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
-
-    const reader = new FileReader();
-    reader.onload = (ev) => {
-        const img = new Image();
-        img.onload = () => {
-            const canvas = document.createElement('canvas');
-            const MAX = 300;
-            let w = img.width;
-            let h = img.height;
-            if (w > h) { if (w > MAX) { h *= MAX / w; w = MAX; } }
-            else { if (h > MAX) { w *= MAX / h; h = MAX; } }
-            canvas.width = w;
-            canvas.height = h;
-            const ctx = canvas.getContext('2d');
-            ctx.drawImage(img, 0, 0, w, h);
-            const data = canvas.toDataURL('image/jpeg', 0.7);
-            photoData.value = data;
-            photoPreview.src = data;
-            photoPreview.classList.remove('hidden');
-            photoRemove.classList.remove('hidden');
-            photoButton.classList.add('hidden');
-        };
-        img.src = ev.target.result;
-    };
-    reader.readAsDataURL(file);
-});
-
-photoRemove.addEventListener('click', clearPhoto);
 
 cancelForm.addEventListener('click', () => formModal.classList.add('hidden'));
 closeFormModal.addEventListener('click', () => formModal.classList.add('hidden'));
 
 drugForm.addEventListener('submit', async (e) => {
     e.preventDefault();
-
     const month = parseInt(monthInput.value);
     const year = parseInt(yearInput.value);
-    // Храним как YYYY-MM-DD, день всегда 1
     const expiryDate = `${year}-${String(month + 1).padStart(2, '0')}-01`;
 
     const drug = {
@@ -461,7 +452,7 @@ drugForm.addEventListener('submit', async (e) => {
         packSize: packInput.value.trim(),
         expiryDate: expiryDate,
         remaining: remainingInput.value.trim(),
-        photo: photoData.value || null
+        photos: [...tempPhotos]
     };
 
     if (!drug.name) return;
@@ -486,13 +477,24 @@ function openCard(drug) {
     cardExpiry.textContent = formatDate(drug.expiryDate);
     cardRemaining.textContent = drug.remaining || '—';
 
-    if (drug.photo) {
-        cardPhoto.src = drug.photo;
+    const photos = getAllPhotos(drug);
+    if (photos.length > 0) {
+        cardPhoto.src = photos[0];
         cardPhoto.classList.remove('hidden');
         cardPhotoPlaceholder.classList.add('hidden');
     } else {
         cardPhoto.classList.add('hidden');
         cardPhotoPlaceholder.classList.remove('hidden');
+    }
+
+    // Точки-индикаторы
+    photoDots.innerHTML = '';
+    if (photos.length > 1) {
+        photos.forEach((_, i) => {
+            const dot = document.createElement('div');
+            dot.className = 'photo-dot' + (i === 0 ? ' active' : '');
+            photoDots.appendChild(dot);
+        });
     }
 
     cardModal.classList.remove('hidden');
@@ -513,7 +515,6 @@ deleteFromCard.addEventListener('click', async () => {
 
 closeCard.addEventListener('click', () => cardModal.classList.add('hidden'));
 
-// Закрытие модалок по фону
 document.querySelectorAll('.modal-backdrop').forEach(bg => {
     bg.addEventListener('click', () => {
         formModal.classList.add('hidden');
