@@ -474,44 +474,85 @@ body {
     border-radius: 4px;
 }
 
-/* Цвета тегов */
 .tag-Лекарство { background: rgba(201, 169, 110, 0.15); color: #c9a96e; }
 .tag-Расходник { background: rgba(110, 160, 201, 0.15); color: #6ea0c9; }
-.tag-Деревянный-ящик { background: rgba(160, 140, 110, 0.15); color: #a08c6e; }
-.tag-Красный-ящик { background: rgba(201, 110, 110, 0.15); color: #c96e6e; }
+.tag-Деревянный-ящик { background: rgba(180, 140, 100, 0.18); color: #b48c64; }
+.tag-Красный-ящик { background: rgba(200, 100, 100, 0.18); color: #c86464; }
 
-/* === ЧЕКБОКСЫ === */
-.checkbox-group {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
-    margin-top: 6px;
-}
-
-.checkbox-label {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    font-size: 0.85rem;
-    color: var(--text-secondary);
+/* === MULTISELECT === */
+.multiselect {
+    position: relative;
     cursor: pointer;
-    padding: 6px 12px;
-    background: var(--surface);
-    border-radius: 20px;
-    transition: all var(--transition);
     -webkit-tap-highlight-color: transparent;
 }
 
-.checkbox-label:has(input:checked) {
-    background: var(--accent-dim);
-    color: var(--accent);
+.multiselect-display {
+    width: 100%;
+    min-height: 44px;
+    padding: 10px 36px 10px 14px;
+    background: var(--surface);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: var(--radius-sm);
+    color: var(--text-secondary);
+    font-size: 0.95rem;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    align-items: center;
 }
 
-.checkbox-label input[type="checkbox"] {
+.multiselect-placeholder {
+    color: var(--placeholder);
+}
+
+.multiselect-arrow {
+    position: absolute;
+    right: 14px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--text-muted);
+    pointer-events: none;
+    transition: transform var(--transition);
+}
+
+.multiselect.open .multiselect-arrow {
+    transform: translateY(-50%) rotate(180deg);
+}
+
+.multiselect-dropdown {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background: #25282d;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: var(--radius-sm);
+    margin-top: 4px;
+    padding: 6px 0;
+    z-index: 10;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+}
+
+.multiselect-option {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 14px;
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: background var(--transition);
+}
+
+.multiselect-option:active {
+    background: var(--surface-hover);
+}
+
+.multiselect-option input[type="checkbox"] {
     appearance: none;
     -webkit-appearance: none;
-    width: 16px;
-    height: 16px;
+    width: 18px;
+    height: 18px;
     border: 1.5px solid var(--text-muted);
     border-radius: 4px;
     background: transparent;
@@ -521,16 +562,16 @@ body {
     transition: all var(--transition);
 }
 
-.checkbox-label input[type="checkbox"]:checked {
+.multiselect-option input[type="checkbox"]:checked {
     background: var(--accent);
     border-color: var(--accent);
 }
 
-.checkbox-label input[type="checkbox"]:checked::after {
+.multiselect-option input[type="checkbox"]:checked::after {
     content: '';
     position: absolute;
-    left: 4px;
-    top: 1px;
+    left: 5px;
+    top: 2px;
     width: 5px;
     height: 9px;
     border: solid #1a1d22;
