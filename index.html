@@ -3,16 +3,27 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Моя аптечка</title>
+    <title>Домашняя аптечка</title>
     <link rel="stylesheet" href="style.css">
     <link rel="manifest" href="manifest.json">
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>💊</text></svg>">
 </head>
 <body>
 
-    <!-- Поиск -->
-    <div class="search-container">
-        <input type="text" id="searchInput" placeholder="Поиск..." autocomplete="off">
+    <!-- Хедер -->
+    <header class="header">
+        <h1 class="header-title">Домашняя аптечка</h1>
+        <button class="search-toggle" id="searchToggle" aria-label="Поиск">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                <circle cx="11" cy="11" r="8"/>
+                <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+            </svg>
+        </button>
+    </header>
+
+    <!-- Поиск (скрыт по умолчанию) -->
+    <div class="search-container hidden" id="searchContainer">
+        <input type="text" id="searchInput" placeholder="Поиск лекарств..." autocomplete="off">
     </div>
 
     <!-- Главный список -->
@@ -40,16 +51,24 @@
     <div id="formModal" class="modal hidden">
         <div class="modal-backdrop"></div>
         <div class="modal-content">
-            <h2 id="formTitle">Новое лекарство</h2>
+            <div class="modal-top">
+                <h2 id="formTitle">Новое лекарство</h2>
+                <button type="button" class="modal-close" id="closeFormModal" aria-label="Закрыть">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                        <line x1="18" y1="6" x2="6" y2="18"/>
+                        <line x1="6" y1="6" x2="18" y2="18"/>
+                    </svg>
+                </button>
+            </div>
             <form id="drugForm" autocomplete="off">
                 <input type="hidden" id="drugId">
                 <input type="hidden" id="photoData">
 
                 <label for="nameInput">Название *</label>
-                <input type="text" id="nameInput" required placeholder="Нурофен">
+                <input type="text" id="nameInput" required placeholder="Название препарата">
 
                 <label for="substanceInput">Действующее вещество</label>
-                <input type="text" id="substanceInput" placeholder="Ибупрофен">
+                <input type="text" id="substanceInput" placeholder="Например, ибупрофен">
 
                 <label for="packInput">В упаковке</label>
                 <input type="text" id="packInput" placeholder="20 таб.">
@@ -77,7 +96,9 @@
 
                 <div class="form-actions">
                     <button type="submit" class="btn-primary">Сохранить</button>
-                    <button type="button" class="btn-secondary" id="cancelForm">Отмена</button>
+                </div>
+                <div class="form-cancel">
+                    <button type="button" class="btn-cancel" id="cancelForm">Отменить</button>
                 </div>
             </form>
         </div>
@@ -87,6 +108,15 @@
     <div id="cardModal" class="modal hidden">
         <div class="modal-backdrop"></div>
         <div class="modal-content">
+            <div class="modal-top">
+                <h2></h2>
+                <button type="button" class="modal-close" id="closeCard" aria-label="Закрыть">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                        <line x1="18" y1="6" x2="6" y2="18"/>
+                        <line x1="6" y1="6" x2="18" y2="18"/>
+                    </svg>
+                </button>
+            </div>
             <div class="card-photo-container">
                 <img id="cardPhoto" class="card-photo hidden" alt="">
                 <div id="cardPhotoPlaceholder" class="card-photo-placeholder hidden"></div>
@@ -111,7 +141,6 @@
                 <button type="button" class="btn-primary" id="editFromCard">Изменить</button>
                 <button type="button" class="btn-danger" id="deleteFromCard">Удалить</button>
             </div>
-            <button type="button" class="btn-secondary btn-close-card" id="closeCard">Закрыть</button>
         </div>
     </div>
 
