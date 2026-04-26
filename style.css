@@ -477,7 +477,7 @@ form select {
 }
 
 .btn-primary {
-    padding: 13px 48px;
+    padding: 14px 56px;
     border-radius: var(--radius-sm);
     font-size: 0.95rem;
     font-weight: 500;
@@ -487,8 +487,7 @@ form select {
     font-family: inherit;
     background: var(--accent);
     color: #1a1d22;
-    min-width: 220px;
-    width: auto;
+    min-width: 240px;
 }
 
 .btn-primary:active {
