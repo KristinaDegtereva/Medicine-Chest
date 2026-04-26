@@ -548,6 +548,7 @@ form select {
 .card-photo-container {
     position: relative;
     margin-bottom: 16px;
+    margin-top: 10px;
 }
 
 .card-photo {
