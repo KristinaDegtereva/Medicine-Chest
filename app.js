@@ -536,6 +536,19 @@ function openCard(drug) {
     }
 
     cardModal.classList.remove('hidden');
+
+    // Листание фото по тапу
+    if (cardPhoto && photos.length > 1) {
+        var currentPhotoIndex = 0;
+        cardPhoto.onclick = function() {
+            currentPhotoIndex = (currentPhotoIndex + 1) % photos.length;
+            cardPhoto.src = photos[currentPhotoIndex];
+            var dots = photoDots ? photoDots.querySelectorAll('.photo-dot') : [];
+            dots.forEach(function(dot, i) {
+                dot.classList.toggle('active', i === currentPhotoIndex);
+            });
+        };
+    }
 }
 
 if (editFromCard) {
