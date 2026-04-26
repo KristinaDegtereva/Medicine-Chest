@@ -269,6 +269,13 @@ body {
     text-overflow: ellipsis;
 }
 
+.drug-tags-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    margin-top: 3px;
+}
+
 .drug-meta {
     text-align: right;
     flex-shrink: 0;
@@ -423,6 +430,13 @@ body {
     background: var(--accent);
 }
 
+.card-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-bottom: 10px;
+}
+
 .card-subtext {
     font-size: 0.85rem;
     color: var(--text-secondary);
@@ -451,7 +465,6 @@ body {
     font-size: 0.7rem;
     padding: 3px 10px;
     border-radius: 12px;
-    margin-bottom: 8px;
 }
 
 .drug-tag {
@@ -459,37 +472,70 @@ body {
     font-size: 0.65rem;
     padding: 2px 6px;
     border-radius: 4px;
-    margin-top: 2px;
 }
 
 /* Цвета тегов */
-./* Цвета тегов */
-.tag-Лекарство,
-.card-tag.tag-Лекарство,
-.drug-tag.tag-Лекарство {
-    background: rgba(201, 169, 110, 0.15);
-    color: #c9a96e;
+.tag-Лекарство { background: rgba(201, 169, 110, 0.15); color: #c9a96e; }
+.tag-Расходник { background: rgba(110, 160, 201, 0.15); color: #6ea0c9; }
+.tag-Деревянный-ящик { background: rgba(160, 140, 110, 0.15); color: #a08c6e; }
+.tag-Красный-ящик { background: rgba(201, 110, 110, 0.15); color: #c96e6e; }
+
+/* === ЧЕКБОКСЫ === */
+.checkbox-group {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 6px;
 }
 
-.tag-Расходник,
-.card-tag.tag-Расходник,
-.drug-tag.tag-Расходник {
-    background: rgba(110, 160, 201, 0.15);
-    color: #6ea0c9;
+.checkbox-label {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    cursor: pointer;
+    padding: 6px 12px;
+    background: var(--surface);
+    border-radius: 20px;
+    transition: all var(--transition);
+    -webkit-tap-highlight-color: transparent;
 }
 
-.tag-Деревянный-ящик,
-.card-tag.tag-Деревянный-ящик,
-.drug-tag.tag-Деревянный-ящик {
-    background: rgba(160, 140, 110, 0.15);
-    color: #a08c6e;
+.checkbox-label:has(input:checked) {
+    background: var(--accent-dim);
+    color: var(--accent);
 }
 
-.tag-Красный-ящик,
-.card-tag.tag-Красный-ящик,
-.drug-tag.tag-Красный-ящик {
-    background: rgba(201, 110, 110, 0.15);
-    color: #c96e6e;
+.checkbox-label input[type="checkbox"] {
+    appearance: none;
+    -webkit-appearance: none;
+    width: 16px;
+    height: 16px;
+    border: 1.5px solid var(--text-muted);
+    border-radius: 4px;
+    background: transparent;
+    cursor: pointer;
+    position: relative;
+    flex-shrink: 0;
+    transition: all var(--transition);
+}
+
+.checkbox-label input[type="checkbox"]:checked {
+    background: var(--accent);
+    border-color: var(--accent);
+}
+
+.checkbox-label input[type="checkbox"]:checked::after {
+    content: '';
+    position: absolute;
+    left: 4px;
+    top: 1px;
+    width: 5px;
+    height: 9px;
+    border: solid #1a1d22;
+    border-width: 0 2px 2px 0;
+    transform: rotate(45deg);
 }
 
 /* === ФОРМА === */
